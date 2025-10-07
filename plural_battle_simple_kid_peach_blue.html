@@ -1,0 +1,583 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Kru Pai Classroom — Plural Battle (Simple • 10/20 ข้อต่อชุด)</title>
+<style>
+:root{
+  --brand:#ff9f4a;   /* ส้มพีชสดใส */
+  --brand-2:#4db6ff; /* ฟ้าอ่อนสดใส */
+  --ok:#34a853;
+  --bad:#ea4335;
+  --text:#263238;
+  --card:#fffdfb;
+  --card-border:#ffe0b2;
+  --chip:#fff3e0;
+  --chip-text:#8d6e63;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;
+  color:var(--text);
+  background: linear-gradient(180deg, #d9f1ff 0%, #fff0e0 100%);
+  background-attachment: fixed;
+}
+.container{max-width:980px;margin:0 auto;padding:20px 20px 44px}
+.card{
+  background:var(--card);
+  border:2px solid var(--card-border);
+  border-radius:24px;
+  padding:20px;
+  box-shadow:0 10px 28px rgba(255,159,74,.22), 0 4px 12px rgba(0,0,0,.04);
+}
+.title{font-size:30px;font-weight:900;margin:0 0 6px;letter-spacing:.3px}
+.sub{color:#5d6b73;margin:0 0 16px}
+.pill{
+  display:inline-flex;gap:8px;align-items:center;
+  padding:8px 14px;border:2px solid #ffd8a8;border-radius:999px;
+  background:var(--chip);font-weight:800;color:var(--chip-text)
+}
+.pill::before{content:"⭐";}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;
+  padding:12px 18px;border-radius:14px;border:2px solid #ffd8a8;
+  background:#fff7ef;font-weight:900;cursor:pointer;transition:.18s;box-shadow:0 3px 0 rgba(0,0,0,.05)
+}
+.btn:hover{transform:translateY(-2px)}
+.btn.primary{
+  background:var(--brand);
+  color:#fff;border-color:var(--brand);
+  box-shadow:0 6px 0 #ff8a26;
+}
+.btn.primary:hover{background:#ffa94d;transform:translateY(-2px)}
+.btn.lock{opacity:.5;filter:grayscale(.1);cursor:not-allowed}
+.input,.select{
+  padding:12px 14px;border-radius:14px;border:2px solid #ffd8a8;min-width:220px;background:#fff;
+  font-weight:700
+}
+.hint{
+  background:linear-gradient(90deg, #fff7ef, #e6f6ff);
+  border:2px dashed #ffc78d;padding:14px;border-radius:16px
+}
+.note{color:#6c7a80;font-size:12px}
+
+/* quiz */
+.q-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.progress{font-weight:900}
+.timer{
+  min-width:88px;text-align:right;font-variant-numeric:tabular-nums;
+  padding:6px 10px;border-radius:999px;background:#e3f2ff;border:2px solid #b3e0ff;font-weight:900;
+}
+.qword{font-size:32px;font-weight:900;text-align:center;margin:18px 0}
+.choices{display:grid;grid-template-columns:1fr;gap:12px}
+.choice{
+  padding:16px;border:3px solid #ffd8a8;border-radius:16px;background:#ffffff;
+  font-size:22px;font-weight:900;cursor:pointer;transition:.18s
+}
+.choice:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,.05)}
+.choice.correct{border-color:var(--ok);background:#e8fff3}
+.choice.wrong{border-color:var(--bad);background:#fff1f1}
+.locked{pointer-events:none;opacity:.92}
+@media (min-width:560px){ .choices{grid-template-columns:1fr 1fr} }
+
+/* results & charts */
+.badge{
+  padding:8px 12px;border-radius:999px;border:2px solid #b3e0ff;background:#e3f2ff;font-weight:900
+}
+.grade{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:64px;height:64px;border-radius:16px;font-size:24px;font-weight:900;margin-left:8px
+}
+.grade.A{background:#e8fff3;color:var(--ok)} .grade.B{background:#f4ffe8;color:#3b7c0a}
+.grade.C{background:#fff7e8;color:#a46200} .grade.D{background:#fff1f1;color:var(--bad)}
+.chart{margin-top:12px}
+.series-grid{display:grid;grid-template-columns:1fr;gap:14px}
+@media(min-width:720px){ .series-grid{grid-template-columns:1fr 1fr} }
+.series-box{padding:16px;border:2px solid #b3e0ff;border-radius:16px;background:#f7fbff}
+.bar{height:12px;border-radius:8px;background:linear-gradient(90deg,var(--brand),var(--brand-2))}
+.legend{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin:6px 0 0}
+.legend-item{display:flex;gap:6px;align-items:center}
+.legend-line{width:18px;height:0;border-top:3px solid #3e5b7a}
+.legend-line.set2{border-top-style:dashed;border-top-color:#6c8db0}
+.legend-line.set3{border-top-style:dotted;border-top-color:#90a4b7}
+.toggle{margin-top:8px}
+
+/* subtle confetti canvas layering */
+.confetti-canvas{
+  position:fixed;inset:0;pointer-events:none;z-index:9999
+}
+</style>
+<noscript>
+  <div style="background:#fff1f1;color:#b20b0b;padding:12px;text-align:center;font-weight:800">
+    ต้องเปิด JavaScript เพื่อเล่นเกมนี้ กรุณาเปิดไฟล์ด้วยเบราว์เซอร์ (เช่น Chrome/Edge/Safari)
+  </div>
+</noscript>
+</head>
+<body>
+<canvas id="confetti" class="confetti-canvas"></canvas>
+
+<div class="container">
+
+  <!-- HOME -->
+  <section id="home" class="card">
+    <div class="pill">Kru Pai Classroom</div>
+    <h1 class="title">Plural Battle — Simple (เลือก 10 หรือ 20 ข้อ)</h1>
+    <p class="sub">ทบทวน → เกม (10 วิ/ข้อ) → สรุปผล + กราฟความพยายาม — ผ่าน ≥80% ปลดล็อกชุดถัดไป (ภายในรอบนี้)</p>
+
+    <div class="row">
+      <label>ชื่อผู้เล่น:</label>
+      <input id="playerName" class="input" placeholder="เช่น น้องเมย์ / Nunu"/>
+      <button class="btn" onclick="saveName()">บันทึกชื่อ</button>
+      <span id="hello" class="note"></span>
+    </div>
+
+    <div style="height:10px"></div>
+    <div class="row">
+      <button id="b1" class="btn primary" onclick="goReview('set1')">เล่นชุดที่ 1 🎯</button>
+      <button id="b2" class="btn lock" onclick="locked(2)">เล่นชุดที่ 2</button>
+      <button id="b3" class="btn lock" onclick="locked(3)">เล่นชุดที่ 3</button>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <button class="btn" onclick="openSeries()">ดูสรุปซีรีส์ 💫</button>
+      <button class="btn" onclick="resetThisSession()">รีเซ็ตการปลดล็อก (เฉพาะรอบนี้)</button>
+    </div>
+    <div class="note" style="margin-top:8px">* ระบบจะพยายามบันทึกชื่อและสถิติในเครื่อง ถ้าถูกบล็อกจะเก็บไว้ชั่วคราวเฉพาะรอบนี้</div>
+  </section>
+
+  <!-- REVIEW -->
+  <section id="review" class="card" style="display:none">
+    <div class="pill">ทบทวนสั้น ๆ</div>
+    <h1 class="title" id="revTitle">Plural Battle — ชุดที่ 1</h1>
+    <div class="hint">
+      • เติม <b>s</b> ทั่วไป: book → books<br>
+      • ลงท้าย <b>s, x, z, ch, sh</b> เติม <b>es</b>: bus → buses<br>
+      • ลงท้าย <b>y</b> หลังพยัญชนะ: baby → babies<br>
+      • <b>f/fe</b> → <b>ves</b>: leaf → leaves<br>
+      • ผันไม่ปกติ: man → men, person → people, mouse → mice
+    </div>
+
+    <div class="row" style="margin-top:10px">
+      <label>จำนวนข้อ:</label>
+      <select id="qCount" class="select">
+        <option value="10">10</option>
+        <option value="20" selected>20</option>
+      </select>
+      <span class="note">* จับเวลา 10 วินาที/ข้อ</span>
+    </div>
+
+    <div class="row" style="margin-top:10px">
+      <button class="btn primary" onclick="startGame()">เริ่มเกม ➜</button>
+      <button class="btn" onclick="backHome()">กลับหน้าแรก</button>
+    </div>
+  </section>
+
+  <!-- QUIZ -->
+  <section id="quiz" class="card" style="display:none">
+    <div class="q-head">
+      <div class="progress">ข้อที่ <span id="qIndex">1</span>/<span id="qTotal">10</span></div>
+      <div class="timer"><span id="timer">10</span>s</div>
+    </div>
+    <div class="qword" id="qWord">word</div>
+    <div class="choices" id="choices"></div>
+  </section>
+
+  <!-- RESULTS -->
+  <section id="results" class="card" style="display:none">
+    <h2 class="title">สรุปผลการทดสอบ</h2>
+    <p class="sub" id="sum"></p>
+    <div class="row">
+      <span class="badge" id="passBadge"></span>
+      <span id="gradeBox" class="grade">A</span>
+    </div>
+    <div class="chart" id="attemptChart"></div>
+    <div class="row" style="margin-top:12px">
+      <button class="btn" onclick="startGame()">ทดสอบซ้ำ</button>
+      <button class="btn" onclick="backHome()">กลับหน้าแรก</button>
+      <button class="btn primary" id="nextBtn" style="display:none">ไปชุดถัดไป ➜</button>
+    </div>
+  </section>
+
+  <!-- SERIES SUMMARY -->
+  <section id="series" class="card" style="display:none">
+    <div class="pill">Series Summary</div>
+    <h1 class="title">พัฒนาการซีรีส์ Plural Battle</h1>
+    <p class="sub" id="seriesNote"></p>
+
+    <div class="series-grid" style="margin-top:6px">
+      <div class="series-box">
+        <b>ชุดที่ 1 — ความพยายาม (ล่าสุด 10 ครั้ง)</b>
+        <div id="chart1" class="chart"></div>
+        <div id="score1"></div>
+      </div>
+      <div class="series-box">
+        <b>ชุดที่ 2 — ความพยายาม (ล่าสุด 10 ครั้ง)</b>
+        <div id="chart2" class="chart"></div>
+        <div id="score2"></div>
+      </div>
+      <div class="series-box">
+        <b>ชุดที่ 3 — ความพยายาม (ล่าสุด 10 ครั้ง)</b>
+        <div id="chart3" class="chart"></div>
+        <div id="score3"></div>
+      </div>
+      <div class="series-box">
+        <b>คะแนนสูงสุดของแต่ละชุด</b>
+        <div id="bestBars" class="chart"></div>
+      </div>
+    </div>
+    <div class="row" style="margin-top:12px">
+      <button class="btn" onclick="backHome()">กลับหน้าแรก</button>
+    </div>
+  </section>
+
+</div>
+
+<script>
+/* ============ Storage helper ============ */
+let hasLS = true;
+try { localStorage.setItem("__kpc_test","1"); localStorage.removeItem("__kpc_test"); }
+catch(e){ hasLS = false; }
+const mem = {};
+function getArr(key){
+  if(hasLS){
+    try{ const s = localStorage.getItem(key); return s? JSON.parse(s): []; }catch(e){}
+  }
+  return mem[key] ? [...mem[key]] : [];
+}
+function setArr(key, arr){
+  if(hasLS){
+    try{ localStorage.setItem(key, JSON.stringify(arr)); return; }catch(e){}
+  }
+  mem[key] = [...arr];
+}
+function pushArr(key, val){
+  const arr = getArr(key); arr.push(val); setArr(key, arr);
+}
+
+/* ============ Data (20 ข้อต่อชุด) ============ */
+const SETS = {
+  set1: [
+    { base:"key",      correct:"keys",     wrong:"keies"   },
+    { base:"bus",      correct:"buses",    wrong:"buss"    },
+    { base:"baby",     correct:"babies",   wrong:"babys"   },
+    { base:"leaf",     correct:"leaves",   wrong:"leafs"   },
+    { base:"potato",   correct:"potatoes", wrong:"potatos" },
+    { base:"woman",    correct:"women",    wrong:"womans"  },
+    { base:"child",    correct:"children", wrong:"childs"  },
+    { base:"mouse",    correct:"mice",     wrong:"mouses"  },
+    { base:"tooth",    correct:"teeth",    wrong:"tooths"  },
+    { base:"fox",      correct:"foxes",    wrong:"foxs"    },
+    // เพิ่มให้ครบ 20
+    { base:"class",    correct:"classes",  wrong:"classs"  },
+    { base:"watch",    correct:"watches",  wrong:"watchs"  },
+    { base:"brush",    correct:"brushes",  wrong:"brushs"  },
+    { base:"bench",    correct:"benches",  wrong:"benchs"  },
+    { base:"berry",    correct:"berries",  wrong:"berrys"  },
+    { base:"city",     correct:"cities",   wrong:"citys"   },
+    { base:"story",    correct:"stories",  wrong:"storys"  },
+    { base:"wolf",     correct:"wolves",   wrong:"wolfs"   },
+    { base:"life",     correct:"lives",    wrong:"lifes"   },
+    { base:"calf",     correct:"calves",   wrong:"calfs"   },
+  ],
+  set2: [
+    { base:"boy",      correct:"boys",     wrong:"boies"   },
+    { base:"box",      correct:"boxes",    wrong:"boxs"    },
+    { base:"mango",    correct:"mangoes",  wrong:"mangos"  },
+    { base:"hero",     correct:"heroes",   wrong:"heros"   },
+    { base:"lady",     correct:"ladies",   wrong:"ladys"   },
+    { base:"knife",    correct:"knives",   wrong:"knifes"  },
+    { base:"half",     correct:"halves",   wrong:"halfs"   },
+    { base:"tomato",   correct:"tomatoes", wrong:"tomatos" },
+    { base:"dish",     correct:"dishes",   wrong:"dishs"   },
+    { base:"church",   correct:"churches", wrong:"churchs" },
+    // เพิ่มให้ครบ 20
+    { base:"photo",    correct:"photos",   wrong:"photoes" },
+    { base:"studio",   correct:"studios",  wrong:"studioes"},
+    { base:"echo",     correct:"echoes",   wrong:"echos"   },
+    { base:"cherry",   correct:"cherries", wrong:"cherrys" },
+    { base:"family",   correct:"families", wrong:"familys" },
+    { base:"quiz",     correct:"quizzes",  wrong:"quizs"   },
+    { base:"beach",    correct:"beaches",  wrong:"beachs"  },
+    { base:"peach",    correct:"peaches",  wrong:"peachs"  },
+    { base:"kiss",     correct:"kisses",   wrong:"kisss"   },
+    { base:"match",    correct:"matches",  wrong:"matchs"  },
+  ],
+  set3: [
+    { base:"man",        correct:"men",        wrong:"mans"       },
+    { base:"person",     correct:"people",     wrong:"persons"    },
+    { base:"goose",      correct:"geese",      wrong:"gooses"     },
+    { base:"foot",       correct:"feet",       wrong:"foots"      },
+    { base:"axis",       correct:"axes",       wrong:"axises"     },
+    { base:"analysis",   correct:"analyses",   wrong:"analysises" },
+    { base:"criterion",  correct:"criteria",   wrong:"criterions" },
+    { base:"phenomenon", correct:"phenomena",  wrong:"phenomenons"},
+    { base:"library",    correct:"libraries",  wrong:"librarys"   },
+    { base:"piano",      correct:"pianos",     wrong:"pianoes"    },
+    // เพิ่มให้ครบ 20
+    { base:"cactus",     correct:"cacti",      wrong:"cactii"     },
+    { base:"nucleus",    correct:"nuclei",     wrong:"nucleuses"  },
+    { base:"bacterium",  correct:"bacteria",   wrong:"bacteriums" },
+    { base:"oasis",      correct:"oases",      wrong:"oasises"    },
+    { base:"thesis",     correct:"theses",     wrong:"thesises"   },
+    { base:"syllabus",   correct:"syllabi",    wrong:"syllabies"  },
+    { base:"alumnus",    correct:"alumni",     wrong:"alumnis"    },
+    { base:"fungus",     correct:"fungi",      wrong:"fungii"     },
+    { base:"louse",      correct:"lice",       wrong:"louses"     },
+    { base:"hypothesis", correct:"hypotheses", wrong:"hypothesises"},
+  ]
+};
+const PASS = 80;
+const NAME_KEY = "kpc_player_name";
+const SCORE_KEYS = { set1:"kpc_scores_plural_set1", set2:"kpc_scores_plural_set2", set3:"kpc_scores_plural_set3" };
+
+/* ============ State ============ */
+let unlocked2=false, unlocked3=false;
+let currentSetId="set1";
+let order=[], idx=0, score=0, timer=null, timeLeft=10;
+let currentQuestions=[];
+
+/* ============ Init ============ */
+(function init(){
+  const n = getName();
+  document.getElementById('playerName').value = n;
+  document.getElementById('hello').textContent = n ? `สวัสดี, ${n} 👋` : "";
+})();
+
+function saveName(){
+  const v = document.getElementById('playerName').value.trim();
+  if(hasLS){ try{ localStorage.setItem(NAME_KEY, v); }catch(e){} }
+  else { mem[NAME_KEY] = v; }
+  document.getElementById('hello').textContent = v ? `สวัสดี, ${v} 👋` : "";
+  alert("บันทึกชื่อเรียบร้อย");
+}
+function getName(){
+  if(hasLS){ try{ return localStorage.getItem(NAME_KEY) || ""; }catch(e){} }
+  return mem[NAME_KEY] || "";
+}
+
+/* ============ Navigation ============ */
+function locked(n){ alert("ปลดล็อกชุดที่ "+n+" เมื่อผ่านชุดก่อนหน้าด้วยคะแนน ≥80% ในรอบนี้"); }
+function goReview(id){
+  if(id==="set2" && !unlocked2) return locked(2);
+  if(id==="set3" && !unlocked3) return locked(3);
+  currentSetId = id;
+  show('home', false); show('results', false); show('quiz', false);
+  show('review', true);
+  document.getElementById('revTitle').textContent = "Plural Battle — ชุดที่ " + (id==="set1"?1:id==="set2"?2:3);
+}
+function backHome(){ stopTimer(); show('review',false); show('quiz',false); show('results',false); show('series',false); show('home',true); }
+function show(id,on){ document.getElementById(id).style.display = on?'block':'none'; }
+
+function openSeries(){
+  show('home',false); show('series',true);
+  const n = getName() || "นักสู้พหูพจน์";
+  document.getElementById('seriesNote').textContent = `สวัสดี ${n} — ดูพัฒนาการของแต่ละชุดได้ที่นี่`;
+  const a1 = getArr(SCORE_KEYS.set1).slice(-10);
+  const a2 = getArr(SCORE_KEYS.set2).slice(-10);
+  const a3 = getArr(SCORE_KEYS.set3).slice(-10);
+  renderChart("#chart1", a1);
+  renderChart("#chart2", a2);
+  renderChart("#chart3", a3);
+  // per-set scores
+  setText('score1', scoreBlock(SCORE_KEYS.set1));
+  setText('score2', scoreBlock(SCORE_KEYS.set2));
+  setText('score3', scoreBlock(SCORE_KEYS.set3));
+  // best bars
+  renderBestBars();
+}
+
+function resetThisSession(){
+  unlocked2=false; unlocked3=false;
+  document.getElementById('b2').className = "btn lock"; document.getElementById('b2').onclick = ()=>locked(2);
+  document.getElementById('b3').className = "btn lock"; document.getElementById('b3').onclick = ()=>locked(3);
+  alert("รีเซ็ตการปลดล็อกในรอบนี้เรียบร้อย");
+}
+
+/* ============ Quiz Flow ============ */
+function qCount(){
+  const el = document.getElementById('qCount');
+  return el ? Math.max(1, parseInt(el.value||"10",10)) : 10;
+}
+
+function startGame(){
+  show('review',false); show('quiz',true); show('results',false);
+  const data = SETS[currentSetId];
+  currentQuestions = shuffle([...data]).slice(0, qCount());
+  order = currentQuestions;
+  idx=0; score=0;
+  setText('qTotal', currentQuestions.length);
+  renderQ();
+}
+function renderQ(){
+  if(idx>=order.length){ return finish(); }
+  const q = order[idx];
+  setText('qIndex', idx+1);
+  setText('qWord', `พหูพจน์ของ “${q.base}” คือข้อใด?`);
+  const opts = shuffle([q.correct, q.wrong]);
+  const box = document.getElementById('choices');
+  box.classList.remove('locked'); box.innerHTML='';
+  opts.forEach(ans=>{
+    const btn = document.createElement('button');
+    btn.className='choice'; btn.textContent=ans;
+    btn.onclick = ()=> pick(ans===q.correct, btn, q.correct);
+    box.appendChild(btn);
+  });
+  startTimer();
+}
+
+function startTimer(){
+  stopTimer(); timeLeft=10; setText('timer', timeLeft);
+  timer = setInterval(()=>{
+    timeLeft--; setText('timer', timeLeft);
+    if(timeLeft<=0){ stopTimer(); showCorrect(); setTimeout(next, 600); }
+  }, 1000);
+}
+function stopTimer(){ if(timer){ clearInterval(timer); timer=null; } }
+function setText(id, v){ const el=document.getElementById(id); if(el) el.textContent=v; }
+
+function showCorrect(){
+  const q = order[idx];
+  document.querySelectorAll('.choice').forEach(el=>{
+    if(el.textContent===q.correct){ el.classList.add('correct'); }
+  });
+}
+function pick(ok, el, correct){
+  stopTimer();
+  if(ok){ score++; el.classList.add('correct'); }
+  else{ el.classList.add('wrong'); showCorrect(); }
+  document.getElementById('choices').classList.add('locked');
+  setTimeout(next, 450);
+}
+function next(){ idx++; renderQ(); }
+
+/* ============ Results ============ */
+function finish(){
+  show('quiz',false); show('results',true);
+  const total = currentQuestions.length;
+  const pct = Math.round((score/total)*100);
+  const grade = pct>=90?'A':pct>=80?'B':pct>=70?'C':'D';
+  setText('sum', `คะแนน: ${score}/${total} (${pct}%)`);
+  const g = document.getElementById('gradeBox'); g.className='grade '+grade; g.textContent=grade;
+  // badge + next
+  const passB = document.getElementById('passBadge');
+  const nextBtn = document.getElementById('nextBtn');
+  if(pct>=PASS){
+    passB.textContent = `ผ่านเกณฑ์ ${PASS}% ✅`;
+    nextBtn.style.display='inline-flex';
+    nextBtn.onclick = ()=>{
+      if(currentSetId==='set1'){ unlocked2=true; goReview('set2'); updateHomeButtons(); }
+      else if(currentSetId==='set2'){ unlocked3=true; goReview('set3'); updateHomeButtons(); }
+      else{ openSeries(); }
+    };
+    confettiBurst(); // 🎉 เมื่อผ่าน
+  }else{
+    passB.textContent = `ยังไม่ถึง ${PASS}% ❌`;
+    nextBtn.style.display='none';
+  }
+  // save attempt & render chart
+  const key = SCORE_KEYS[currentSetId];
+  pushArr(key, { ts: Date.now(), pct });
+  renderChart("#attemptChart", getArr(key).slice(-10));
+}
+
+function updateHomeButtons(){
+  const b2 = document.getElementById('b2'), b3 = document.getElementById('b3');
+  if(unlocked2){ b2.className="btn primary"; b2.onclick = ()=> goReview('set2'); }
+  if(unlocked3){ b3.className="btn primary"; b3.onclick = ()=> goReview('set3'); }
+}
+
+/* ============ Series Summary helpers ============ */
+function scoreBlock(key){
+  const arr = getArr(key);
+  const last = arr.length ? arr[arr.length-1].pct : 0;
+  const best = arr.reduce((m,d)=> Math.max(m, d.pct), 0);
+  return `คะแนนล่าสุด: <b>${Math.round(last)}%</b> • คะแนนสูงสุด: <b>${Math.round(best)}%</b>`;
+}
+function renderBestBars(){
+  const b1 = getArr(SCORE_KEYS.set1).reduce((m,d)=>Math.max(m,d.pct),0);
+  const b2 = getArr(SCORE_KEYS.set2).reduce((m,d)=>Math.max(m,d.pct),0);
+  const b3 = getArr(SCORE_KEYS.set3).reduce((m,d)=>Math.max(m,d.pct),0);
+  const el = document.getElementById('bestBars');
+  el.innerHTML = bar("ชุดที่ 1", b1) + bar("ชุดที่ 2", b2) + bar("ชุดที่ 3", b3);
+  function bar(label, v){
+    const pct = Math.round(v||0);
+    return `<div style="margin:8px 0">
+      <div class="row" style="justify-content:space-between"><div>${label}</div><div>${pct}%</div></div>
+      <div style="background:#eaf4ff;border-radius:8px;overflow:hidden;border:2px solid #b3e0ff">
+        <div class="bar" style="width:${pct}%;"></div>
+      </div>
+    </div>`;
+  }
+}
+
+/* ============ Charts (inline SVG) ============ */
+function renderChart(selector, attempts){
+  const el = document.querySelector(selector); if(!el) return;
+  const W = Math.min(620, window.innerWidth - 48), H = 200, pad = 28;
+  const maxX = Math.max(1, attempts.length-1);
+  const xStep = (W - pad*2) / Math.max(1, attempts.length-1 || 1);
+  const yScale = (H - pad*2) / 100;
+  const pts = attempts.map((d,i)=>({ x: pad + (maxX===0?0:i*xStep), y: pad + (100 - d.pct)*yScale, v: d.pct }));
+  const axis = `
+    <line x1="${pad}" y1="${pad}" x2="${pad}" y2="${H-pad}" stroke="#cfe8ff"/>
+    <line x1="${pad}" y1="${H-pad}" x2="${W-pad}" y2="${H-pad}" stroke="#cfe8ff"/>
+    ${[100,80,60,40,20,0].map(v=>{
+      const y = pad + (100 - v)*yScale;
+      return `<line x1="${pad}" y1="${y}" x2="${W-pad}" y2="${y}" stroke="#eaf4ff"/>
+              <text x="${pad-8}" y="${y+4}" font-size="10" text-anchor="end" fill="#6c8db0">${v}%</text>`;
+    }).join('')}
+  `;
+  const path = pts.map((p,i)=> (i?`L${p.x},${p.y}`:`M${p.x},${p.y}`)).join(' ');
+  const dots = pts.map(p=>`<circle cx="${p.x}" cy="${p.y}" r="3" fill="#3e5b7a"><title>${Math.round(p.v)}%</title></circle>`).join('');
+  el.innerHTML = `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">
+    ${axis}
+    <path d="${path}" fill="none" stroke="#3e5b7a" stroke-width="2.5"/>
+    ${dots}
+  </svg>`;
+}
+
+/* ============ Utils ============ */
+function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+
+/* ============ Tiny Confetti ============ */
+function confettiBurst(){
+  const cvs = document.getElementById('confetti');
+  const ctx = cvs.getContext('2d');
+  const W = cvs.width = window.innerWidth;
+  const H = cvs.height = window.innerHeight;
+  const pieces = Array.from({length: 120}).map(()=> ({
+    x: Math.random()*W,
+    y: -20 - Math.random()*H*0.3,
+    r: 3 + Math.random()*4,
+    vy: 2 + Math.random()*3,
+    vx: -1 + Math.random()*2,
+    a: Math.random()*Math.PI,
+    col: Math.random() < .5 ? '#ff9f4a' : '#4db6ff'
+  }));
+  let t = 0, stop = false;
+  function draw(){
+    if(stop) return;
+    ctx.clearRect(0,0,W,H);
+    pieces.forEach(p=>{
+      p.x += p.vx;
+      p.y += p.vy;
+      p.a += 0.04;
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.a);
+      ctx.fillStyle = p.col;
+      ctx.fillRect(-p.r, -p.r, p.r*2, p.r*2);
+      ctx.restore();
+    });
+    t++;
+    if(t>160){ stop=true; ctx.clearRect(0,0,W,H); }
+    else requestAnimationFrame(draw);
+  }
+  draw();
+}
+</script>
+</body>
+</html>
